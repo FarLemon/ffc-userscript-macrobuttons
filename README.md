@@ -1,6 +1,6 @@
 # FFC-MacroButtons
 
-**Version:** 1.1.0  
+**Version:** 1.2.0  
 **Author:** Joshua Messer  
 **Description:** Adds customizable, persistent macro buttons to web pages for quick actions. Buttons and groups are configurable per website and URL path.
 
@@ -9,7 +9,7 @@
 ## Features
 - Floating sidebar with macro buttons
 - Supports button groups for organized actions
-- Persistent configuration via `GM_setValue` / `GM_getValue` (Currently not implemented)
+- Persistent configuration via `GM_setValue` / `GM_getValue`
 - Automatically updates when the URL changes (SPA support)
 - Fully customizable per site and path
 
