@@ -23,97 +23,10 @@ const FFC_MACROBUTTONS_CONFIGS_KEY = 'ffcMacroButtons:configs';
 const FFC_MACROBUTTONS_SETTINGS_DEFAULT_DATA = {
     version: '1.2.0',
     sidebarOpen: false, // default false
-    advancedMode: true, // default false - Users must enable this to run advanced commands
+    advancedMode: false // default false
 };
-const FFC_MACROBUTTONS_SITEMAP_DEFAULT_DATA = {
-    'youtube.com': {
-        '/': {
-            configs: ['youtube/general'],
-        },
-        '/shorts': {
-            configs: ['youtube/shorts'],
-            inherit: false,
-        },
-    },
-};
-const FFC_MACROBUTTONS_CONFIGS_DEFAULT_DATA = {
-    'youtube/general': {
-        meta: {
-            uid: 'fda401db-4f2b-40f2-b88b-6027929b4238',
-            name: 'Youtube',
-            version: '1.2.0',
-        },
-        items: [
-            {
-                type: 'button',
-                id: 'e7ad1095-0bfb-44c9-8997-8a902nj11fa3',
-                label: 'Go To Top',
-                order: 10,
-                commands: [
-                    {
-                        name: 'custom',
-                        advanced: true,
-                        value: `
-                            ctx.window.scrollTo({
-                                top: 0,
-                                behavior: "smooth"
-                            });
-                        `,
-                    },
-                ],
-            },
-            {
-                type: 'button',
-                id: 'e7ad1095-0bfb-44c8-8997-8a6777311fa3',
-                label: 'Go To Bottom',
-                order: 10,
-                commands: [
-                    {
-                        name: 'custom',
-                        advanced: true,
-                        value: `
-                            ctx.window.scrollTo({
-                                top: document.documentElement.scrollHeight,
-                                behavior: "smooth"
-                            });
-                        `,
-                    },
-                ],
-            },
-        ],
-    },
-    'youtube/shorts': {
-        meta: {
-            uid: 'fda401db-4f2b-40f2-b88b-607b98883238',
-            name: 'Youtube',
-            version: '1.2.0',
-        },
-        items: [
-            {
-                type: 'button',
-                id: 'e7ad1095-0bfb-44c9-8997-8a9177311fa3',
-                label: '/watch',
-                order: 10,
-                commands: [
-                    {
-                        name: 'custom',
-                        advanced: true,
-                        value: `
-                            // Get current URL as string
-                            const url = ctx.window.location.href;
-
-                            // Replace "/shorts/" with "/watch?v="
-                            const newUrl = url.replace("/shorts/", "/watch?v=");
-
-                            // Navigate to the new URL
-                            ctx.window.location.href = newUrl;
-                        `,
-                    },
-                ],
-            },
-        ],
-    },
-};
+const FFC_MACROBUTTONS_SITEMAP_DEFAULT_DATA = {};
+const FFC_MACROBUTTONS_CONFIGS_DEFAULT_DATA = {};
 
 // ==================================================
 // Stores Initialization
