@@ -1,6 +1,6 @@
 # FFC-MacroButtons
 
-**Version:** 1.2.0  
+**Release Version:** 1.2.0  
 **Author:** Joshua Messer  
 **Description:** Adds customizable, persistent macro buttons to web pages for quick actions. Buttons and groups are configurable per website and URL path.
 
