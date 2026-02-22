@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name            FFC-MacroButtons
+// @name            FFC-MacroButtons-Core
 // @version         1.2.0
 // @author          Joshua Messer
 // @description     Adds customizable, persistant macro buttons to web pages
@@ -25,8 +25,39 @@ const FFC_MACROBUTTONS_SETTINGS_DEFAULT_DATA = {
     sidebarOpen: false, // default false
     advancedMode: false // default false
 };
-const FFC_MACROBUTTONS_SITEMAP_DEFAULT_DATA = {};
-const FFC_MACROBUTTONS_CONFIGS_DEFAULT_DATA = {};
+const FFC_MACROBUTTONS_SITEMAP_DEFAULT_DATA = {
+    'learn.snhu.edu': {
+        '/': {
+            configs: ['general']
+        }
+    }
+};
+const FFC_MACROBUTTONS_CONFIGS_DEFAULT_DATA = {
+    'general': {
+        meta: {
+            name: 'General',
+            version: '1.2.0'
+        },
+        items: [
+            {
+                type: 'button',
+                label: 'To Top',
+                order: 10,
+                commands: [
+                    { name: 'scrollToTop' }
+                ]
+            },
+            {
+                type: 'button',
+                label: 'To Bottom',
+                order: 20,
+                commands: [
+                    { name: 'scrollToBottom' }
+                ]
+            }
+        ]
+    }
+};
 
 // ==================================================
 // Stores Initialization
@@ -413,7 +444,7 @@ function renderSidebarConfigs(sidebar, items, currentStackRef, rootItems) {
         btn.innerText = item.label;
 
         if (item.type === 'button') {
-            btn.addEventListener('click', () => runCommands(item.commands));
+            btn.addEventListener('mousedown', () => runCommands(item.commands));
             btn.classList.add(
                 'ffc-macrobuttons-sidebar-macro',
                 'ffc-macrobuttons-sidebar-macro-button'
@@ -466,63 +497,63 @@ function updateSidebar(sidebar, currentStackRef) {
 // Macro Execution
 // ==================================================
 
+const PLUGIN_COMMANDS = {};
+
 /**
- * Command handlers object
+ * Register a command from a separate userscript/plugin
+ * @param {string} name - Command name
+ * @param {function} fn - Function to execute when called
+ * @param {object} meta - Optional metadata (description, site, advanced)
  */
-const COMMAND_HANDLERS = {
-    /**
-     * Execute a custom JS command
-     * @param {object} param0
-     * @param {string} param0.value - JS code to execute
-     */
-    custom({ value }) {
-        if (typeof value !== 'string') return;
+unsafeWindow.FFC_MACROBUTTONS_registerCommand = function(name, fn, meta = {}) {
+    if (typeof name !== 'string' || typeof fn !== 'function') {
+        console.error('registerCommand: invalid parameters', name, fn);
+        return;
+    }
+    if (PLUGIN_COMMANDS[name]) {
+        console.warn(`FFC: Plugin command "${name}" already exists`);
+        return;
+    }
+    PLUGIN_COMMANDS[name] = { fn, meta };
+    console.log(`FFC: Registered plugin command: ${name}`);
+}
 
-        try {
-            const ctx = {
-                window: unsafeWindow,
-                document: unsafeWindow.document,
-                location: unsafeWindow.location,
-                console: unsafeWindow.console,
-            };
-
-            const fn = new Function('ctx', `"use strict"; ${value}`);
-            fn(ctx);
-        } catch (err) {
-            console.error('Custom command failed:', err);
-        }
-    },
-};
+/**
+ * Get all plugin commands (internal)
+ */
+unsafeWindow.getPluginCommands = function() {
+    return PLUGIN_COMMANDS;
+}
 
 /**
  * Run an array of commands
- * @param {object[]} commands - List of commands to execute
+ * @param {object[]} commands - List of command objects {name, args?, advanced?}
  */
 async function runCommands(commands) {
     for (const cmd of commands) {
-        // Only run advanced commands if user manually changed 'advancedMode' to 'true' in settings
-        if (
-            cmd.advanced &&
-            !FFC_MACROBUTTONS_SETTINGS_STORE.get().advancedMode
-        ) {
+        // Skip advanced commands if not enabled
+        if (cmd.advanced && !FFC_MACROBUTTONS_SETTINGS_STORE.get().advancedMode) {
             console.warn(`Skipping advanced command: ${cmd.name}`);
             continue;
         }
 
-        // Check if command exists in command handler
-        const handler = COMMAND_HANDLERS[cmd.name];
-        if (!handler) {
-            console.warn('Unknown command:', cmd.name);
+        // Lookup command in plugin/core command packs
+        const plugin = PLUGIN_COMMANDS[cmd.name];
+        if (!plugin) {
+            console.warn(`Unknown command: ${cmd.name}`);
             continue;
         }
 
-        // Run the command
-        const result = handler(cmd);
-
-        // Support async commands by awaiting promise
-        if (result instanceof Promise) await result;
+        try {
+            const result = plugin.fn(cmd.args || {});
+            if (result instanceof Promise) await result;
+        } catch (err) {
+            console.error(`Command "${cmd.name}" failed:`, err);
+        }
     }
 }
+
+
 
 // ==================================================
 // Observers & Listeners
